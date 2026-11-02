@@ -7,7 +7,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.core import base_options
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "pose_landmarker_full.task"
-OUTPUT_PATH=Path(__file__).resolve().parents[1]/"outputs"/"pose_frame.jpg"
+OUTPUT_PATH=Path(__file__).resolve().parents[1]/"outputs"/"pose_frame_2.jpg"
 
 NAMED={
     "nose":0,
