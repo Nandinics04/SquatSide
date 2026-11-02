@@ -1,0 +1,232 @@
+version: 1
+allowed_results: [meets, does_not_meet, cannot_assess]
+source:
+  title: The Squat
+  citation_note: >
+    Cite reference pages 1-35. Reference page = combined PDF page minus 3.
+
+recording:
+  view: side
+  formats: [mp4, mov, webm]
+  max_duration_seconds: 60
+  max_upload_mb: 100
+  camera: >
+    Camera about hip height, true side view, steady, one person,
+    bar and feet in frame.
+
+assumptions:
+  - id: landmark_proxy
+    owner: us
+    text: >
+      The pose model marks the hip joint and the knee joint. The chapter
+      uses the hip crease and the top of the kneecap. Depth and angles
+      are estimates.
+  - id: image_plane
+    owner: us
+    text: >
+      Angles are measured in the 2D image. They describe the body only
+      when the camera is truly side-on.
+  - id: visibility_min
+    owner: us
+    value: 0.5
+    text: >
+      If a required landmark is below this visibility, the measurement
+      is unknown and the result is cannot assess. 0.5 is our cutoff.
+  - id: back_angle_band
+    owner: us
+    text: >
+      The chapter says the bottom back angle is about 45 degrees, and
+      that too vertical and too horizontal are both faults. It gives no
+      numeric pass band. Extreme cutoffs, when we add them, stay here
+      and are labeled as ours. The middle stays cannot assess.
+
+criteria:
+  - id: depth
+    name: Depth below parallel
+    section: "Figure 2-1; Squat Depth"
+    source_pages: [2, 15, 17]
+    side_view: assessable
+    judge: hip_below_knee_estimate
+    required_landmarks: [hip, knee]
+    standard: >
+      The hip crease must drop below a horizontal line through the top
+      of the kneecap. In this chapter that is parallel. Thighs level
+      with the floor are still high.
+    miss_feedback: >
+      Go deeper. Drop the hip crease below the top of the kneecap.
+    uncertainty: Uses the hip and knee joints as stand-ins for the crease and the kneecap.
+
+  - id: back_angle
+    name: Back angle at the bottom
+    section: "Figure 2-5; bottom position; common faults"
+    source_pages: [9, 22, 32, 35]
+    side_view: partial
+    judge: back_angle_deg
+    required_landmarks: [shoulder, hip]
+    standard: >
+      The back angle is the torso plane against the floor. At the bottom
+      of this low-bar squat it is about 45 degrees, not vertical. Too
+      vertical and too horizontal are both faults.
+    miss_feedback: >
+      If the torso is too upright, sit back so the bar stays over the
+      midfoot. If it collapses, keep the chest up.
+    uncertainty: No numeric pass band is stated in the chapter.
+
+  - id: segment_angles
+    name: Hip angle and knee angle
+    section: "Figure 2-5"
+    source_pages: [9, 13]
+    side_view: partial
+    judge: report_only
+    required_landmarks: [shoulder, hip, knee, ankle]
+    standard: >
+      The hip angle is torso and femur. The knee angle is femur and shin.
+      The low-bar squat uses a more closed hip and a more open knee than
+      a front squat. The chapter gives no degree cutoff, so these angles
+      are shown and are not passed or failed.
+    miss_feedback: ""
+    uncertainty: Report the degrees. The graded result is cannot assess.
+
+  - id: bar_over_midfoot
+    name: Bar over the midfoot
+    section: "Balance and bar path"
+    source_pages: [8, 9, 11, 32]
+    side_view: partial
+    judge: bar_vs_midfoot
+    required_landmarks: [bar, heel, foot_index]
+    standard: >
+      The bar stays over the middle of the foot, and the path is vertical.
+      Horizontal travel is not the standard. The 12-inch example in the
+      chapter illustrates bad leverage. It is not a pass mark.
+    miss_feedback: Keep the bar over the middle of the foot through the rep.
+    uncertainty: Cannot assess when the foot or the bar track is missing. The bar track is an estimate.
+
+  - id: knee_vs_toes
+    name: Knees relative to the toes
+    section: "Bottom position"
+    source_pages: [17, 22]
+    side_view: partial
+    judge: knee_vs_toes
+    required_landmarks: [knee, foot_index]
+    standard: >
+      At the bottom the knees are only a little in front of the toes.
+      Knees shoved far forward are the partial-squat fault. The chapter
+      does not give an inch limit.
+    miss_feedback: >
+      Set the hips back so the knees finish only a little ahead of the toes.
+    uncertainty: A borderline position is cannot assess. Grade it only when the knee and the toes are visible.
+
+  - id: hip_drive
+    name: Hip drive out of the bottom
+    section: "Generating hip drive; Figure 2-22"
+    source_pages: [23, 32, 35]
+    side_view: partial
+    judge: hip_drive_direction
+    required_landmarks: [hip, shoulder]
+    standard: >
+      Drive the hips straight up, not forward. Do not lift the chest
+      first. Letting the hips shoot forward drops the bar in front of
+      the midfoot.
+    miss_feedback: Drive the hips up out of the bottom instead of lifting the chest first.
+    uncertainty: Judged from hip and shoulder motion on the ascent.
+
+  - id: gaze
+    name: Eye gaze
+    section: "Eye gaze direction"
+    source_pages: [24, 26, 35]
+    side_view: partial
+    judge: gaze_direction
+    required_landmarks: [nose, ear]
+    standard: >
+      Look down at the floor with the chin slightly down. Looking at the
+      ceiling weakens hip drive. The chapter’s “4 or 5 feet in front”
+      cannot be checked from the video.
+    miss_feedback: Look down at the floor. Do not look up.
+    uncertainty: The side view can separate chin-down from chin-up. It cannot measure the distance to the gaze point.
+
+  - id: heels_down
+    name: Feet flat
+    section: "Bottom position"
+    source_pages: [22]
+    side_view: partial
+    judge: heels_down
+    required_landmarks: [heel, foot_index]
+    standard: The feet stay flat on the floor and the heels stay down.
+    miss_feedback: Keep the heels down and the feet flat.
+    uncertainty: Cannot assess when the heel is hidden.
+
+  - id: bar_placement
+    name: Low-bar placement
+    section: "Figure 2-19; common faults"
+    source_pages: [13, 29, 35]
+    side_view: partial
+    judge: bar_vs_shoulder
+    required_landmarks: [bar, shoulder, ear]
+    standard: >
+      The bar sits just below the spine of the scapula, on the rear
+      delts, not on top of the traps. A high bar forces a more vertical back.
+    miss_feedback: Set the bar lower, just under the shoulder-blade spine.
+    uncertainty: >
+      A side view usually cannot see the scapular spine. Use cannot assess
+      unless the bar is clearly on the neck or clearly below the shoulder.
+
+  - id: knees_out
+    name: Knees shoved out
+    section: "Stance and common faults"
+    source_pages: [14, 22, 35]
+    side_view: not_assessable
+    judge: none
+    required_landmarks: []
+    standard: >
+      The knees stay out so the thighs are parallel to the feet.
+    miss_feedback: ""
+    uncertainty: This is a front-view check. A side camera cannot see it.
+
+  - id: stance_width
+    name: Stance width
+    section: "Generating hip drive"
+    source_pages: [19, 32, 35]
+    side_view: not_assessable
+    judge: none
+    required_landmarks: []
+    standard: Heels are about shoulder width apart.
+    miss_feedback: ""
+    uncertainty: Shoulder-width heels need a front view.
+
+  - id: toe_angle
+    name: Toe angle
+    section: "Generating hip drive"
+    source_pages: [19, 22, 35]
+    side_view: not_assessable
+    judge: none
+    required_landmarks: []
+    standard: Toes point out about 30 degrees.
+    miss_feedback: ""
+    uncertainty: >
+      The chapter states about 30 degrees. A side view cannot measure it.
+
+  - id: grip
+    name: Grip and wrists
+    section: "Adding the bar"
+    source_pages: [27, 28]
+    side_view: not_assessable
+    judge: none
+    required_landmarks: []
+    standard: >
+      Even grip, thumbs on top of the bar, wrists straight, narrow enough
+      that the upper back supports the bar.
+    miss_feedback: ""
+    uncertainty: Hands and wrists are not reliable in a side view of the set.
+
+  - id: rack_setup
+    name: Rack height and walk-out
+    section: "Adding the bar"
+    source_pages: [26, 30, 31, 35]
+    side_view: not_assessable
+    judge: none
+    required_landmarks: []
+    standard: >
+      The rack is about mid-sternum, the lifter steps back out, and the
+      bar is walked forward into the rack. The rack should not be set too high.
+    miss_feedback: ""
+    uncertainty: The rack and the walk-out are not part of the squat video being graded.
