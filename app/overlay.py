@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 import cv2
 import mediapipe as mp
+import numpy as np
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.core import base_options
 
@@ -44,8 +45,8 @@ def collect(path:Path, landmarker)->tuple[float, list[dict]]:
             for name, landmark_index in NAMED.items():
                 point=landmarks[landmark_index]
                 points[name]=(point.x, point.y, visibility_of(point))
-            frames.append(points)
-            index+=1
+        frames.append(points)
+        index+=1
     
     capture.release()
     return fps, frames
@@ -125,7 +126,14 @@ def smooth_bars(bars: list) -> list:
         ))
     return smoothed
 
-def draw(path: Path, fps: float, smoothed: list[dict], bars: list, output: Path) -> None:
+def draw(
+    path: Path,
+    fps: float,
+    smoothed: list[dict],
+    bars: list,
+    output: Path,
+    bottoms: dict | None = None,
+) -> None:
     capture = cv2.VideoCapture(str(path))
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -142,13 +150,40 @@ def draw(path: Path, fps: float, smoothed: list[dict], bars: list, output: Path)
         for x_norm, y_norm in smoothed[index].values():
             center = (int(x_norm * width), int(y_norm * height))
             cv2.circle(frame, center, 5, (0, 255, 0), -1)
-        if bars[index] is not None:
+        if index < len(bars) and bars[index] is not None:
             bar_center = (int(bars[index][0] * width), int(bars[index][1] * height))
             trail.append(bar_center)
             cv2.circle(frame, bar_center, 6, (0, 140, 255), -1)
         if len(trail) >= 2:
-            cv2.polylines(frame, [cv2.UMat(trail) if False else __import__("numpy").array(trail)], False, (0, 140, 255), 2)
-        cv2.putText(frame, "bar estimate", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 140, 255), 2)
+            cv2.polylines(
+                frame,
+                [np.array(trail, dtype=np.int32)],
+                False,
+                (0, 140, 255),
+                2,
+            )
+        cv2.putText(
+            frame,
+            "bar estimate",
+            (20, 40),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 140, 255),
+            2,
+        )
+        if bottoms:
+            for frame_index, rep_number in bottoms.items():
+                if abs(index - frame_index) <= int(fps * 0.4):
+                    cv2.putText(
+                        frame,
+                        f"rep {rep_number} bottom",
+                        (20, 80),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (0, 255, 255),
+                        2,
+                    )
+                    break
         writer.write(frame)
         index += 1
     capture.release()

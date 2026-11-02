@@ -39,6 +39,14 @@ assumptions:
       that too vertical and too horizontal are both faults. It gives no
       numeric pass band. Extreme cutoffs, when we add them, stay here
       and are labeled as ours. The middle stays cannot assess.
+  - id: depth_margin
+    owner: us
+    value: 0.03
+    text: >
+      If the hip and knee differ by less than 0.03 of the image height,
+      depth is cannot assess. The points are joints, not the crease and
+      the kneecap, so a smaller gap is not a pass or a fail.
+    
 
 criteria:
   - id: depth
