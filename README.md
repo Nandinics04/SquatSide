@@ -186,7 +186,7 @@ uv run python -m app.pose samples/side_squat.jpg
 
 The marked image is `outputs/pose_frame.jpg`. `samples/side_squat.jpg` is a bodyweight side view. It is a pose check only. Graded examples are barbell squats.
 
-The common sample is already on disk as `samples/squat.mp4.f313.webm`. `samples/squat.mp4.f251.webm` is audio only. Do not run pose on it.
+The common sample is `samples/squat.mp4.f313.webm`. `samples/squat.mp4.f251.webm` is audio only. Do not run pose on it. The other local clips are listed under [Local sample files](#local-sample-files). `*.mp4` and `*.webm` are gitignored, so these files stay on this machine.
 
 ```powershell
 uv run python -m app.overlay "samples/squat.mp4.f313.webm"
@@ -243,6 +243,25 @@ The file is `samples/front_view.webm`: 1080×1906, about 60 fps, about 30 second
 Depth was `cannot assess` on every rep. The hip-to-knee gaps were about 0.015 to 0.026, all inside `depth_margin`. The other rules were `cannot assess` as well. The program does not detect that the camera is in front. A front camera can see knees-out, stance width, toe angle, both heels, and the grip. This page does not measure those, and it cannot grade depth from the front. The small image gap is what keeps depth from becoming a pass or a fail.
 
 The first upload of this file failed before any finding was produced. A frame with no pose left the MediaPipe timestamp unchanged, and the next frame raised `Input timestamp must be monotonically increasing`. `collect` now stores that empty frame and advances the timestamp.
+
+## Local sample files
+
+These files are in `samples/` for upload from the page. The common sample and the front-view clip are the two recordings written up above.
+
+| File | What it is |
+|---|---|
+| `squat.mp4.f313.webm` | Common sample. 1080×1920, 30 fps, 236 frames, about 8 seconds. Camera behind the plate. |
+| `squat.mp4.f251.webm` | Audio from that download. No picture. Do not analyze it. |
+| `front_view.webm` | Unsuitable front view. 1080×1906, about 60 fps, about 30 seconds. |
+| `side_view.f135.mp4` | Side-view barbell squat from https://www.youtube.com/watch?v=8MVgcCkidd0. 640×480, 30 fps, 524 frames, 17.5 seconds. The plate is a circle beside the lifter, but the camera is behind the lifter rather than a true profile. |
+| `4921641-hd_1066_1920_25fps.mp4` | Side-view barbell back squat. 1066×1920, 25 fps, 234 frames, 9.4 seconds. The plate is seen edge-on and the lifter faces across the frame. This is the closest local clip to the camera the skill asks for. |
+| `fd0eaa34-d14b-4421-b41c-1669f93253b3.mp4` | Three-quarter barbell squat with green plates. 720×1280, 25 fps, 350 frames, 14 seconds. |
+| `side_squat.jpg` | Bodyweight side-view still. Pose check only. |
+| `side_squat_2.jpg` | Barbell side-view still. The plate faces the camera and hides the shoulder. Pose check only, not a graded video. |
+
+On `fd0eaa34-d14b-4421-b41c-1669f93253b3.mp4` the program chose the left side and found four reps, at 1.44 s, 5.16 s, 8.68 s, and 12.36 s. The depth gaps were about 0.016, 0.021, 0.020, and 0.017. All four are inside `0.03`, so depth is `cannot assess` even though the squat looks deep. The camera is three-quarter, and the hip joint sits higher on the body than the hip crease.
+
+`side_view.f135.mp4` and `4921641-hd_1066_1920_25fps.mp4` are ready to upload. Their rep tables are not written here yet.
 
 ## Build note
 
