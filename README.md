@@ -15,7 +15,7 @@ Open `http://127.0.0.1:8000` after the setup below. No API key is required. Ther
 | Support more than one repetition. | `app/reps.py` finds every descent and rise of the hip and marks each bottom. |
 | Track hips, knees, ankles, and the points needed for the torso. Track the bar and show its path. Mark bottoms. Return a playable annotated video or a synchronized overlay. | MediaPipe pose draws the visible joints in green. The orange mark is a bar estimate placed from the shoulder. The browser plays the original upload. A canvas draws the joints, the orange trail, and `rep N bottom` in time with the video. |
 | Separate observed points from estimates. Prefer `cannot assess` when the picture is not enough. | Green dots are pose landmarks. The orange mark is labeled `bar estimate`. A hidden joint, a missing bottom, or a gap inside our depth band is `cannot assess`. |
-| For each rep and each rule: the result `meets`, `does not meet`, or `cannot assess`, the source pages, a timestamp, the measurement when one exists, an explanation, and feedback grounded in the chapter. | `app/measure.py` returns that record. Depth is the only rule with a measurement. The other 13 copy the skill's uncertainty sentence and stay `cannot assess`. |
+| For each rep and each rule: the result `meets`, `does not meet`, or `cannot assess`, the source pages, a timestamp, the measurement when one exists, an explanation, and feedback grounded in the chapter. | `app/measure.py` returns that record. Depth is the only pass or fail. Six other side-view rules show a number and stay `cannot assess`. The remaining seven have no measurement. |
 | Do not present a cutoff the chapter does not state as if the chapter required it. | `depth_margin` of 0.03 is under `assumptions` with `owner: us`. The chapter's line remains the hip crease below the top of the kneecap. |
 | Run upload, analysis, annotation, and feedback on a newly uploaded video. | `POST /analyze` does that path. Nothing is precomputed for the browser. |
 | Evidence on the common sample and one unsuitable recording, a build note, an AI-use note, and a way to change a rule without rewriting Python. | The evidence and notes are below. Changing `depth_margin` in the YAML changes the depth verdict. |
@@ -30,22 +30,48 @@ On the picture:
 - The orange dot and the orange line are the bar estimate. The program places that point a little above the visible shoulder and a little behind the nose. It is not the center of the plate. It is not used in any grade.
 - Yellow text, `rep N bottom`, appears for about 0.4 seconds around the frame where the hip is lowest.
 
-Under the player, every rule is listed once per rep. A `meets` line is green, a `does not meet` line is red, and a `cannot assess` line is gray. Each line shows the rule id, the time of the bottom, the source pages, and one explanation sentence.
+The page opens with the upload and the recording notes. After Analyze, a short result says how many reps were found and what depth did. The video sits beside the findings. Each rep is a card. Each rule uses its name, a Meets, Does not meet, or Cannot assess badge, the explanation, and the chapter pages.
 
 ## The 14 rules
 
-Only depth is measured. The other results are `cannot assess` on every video, including a squat that looks correct.
+A side camera can see seven of the rules well enough to put a number on the page. It cannot see the other seven.
+
+**Seen and measured from the side**
+
+| Rule | What the number is | Result |
+|---|---|---|
+| Depth | Hip joint against the knee joint | `meets`, `does not meet`, or `cannot assess`. This is the only pass or fail. |
+| Back angle | Torso angle against the floor, in degrees | `cannot assess` |
+| Hip angle and knee angle | Both angles, in degrees | `cannot assess` |
+| Knees relative to the toes | How far the knee is in front of or behind the toes | `cannot assess` |
+| Hip drive | How far the hip and the shoulder rise on the way up | `cannot assess` |
+| Eye gaze | How far the nose sits below or above the ear | `cannot assess`. The 4 or 5 feet on the floor are not in this number. |
+| Feet flat | How far the heel point moves from standing to the bottom | `cannot assess` |
+
+**Not measured from the side**
+
+| Rule | Why there is no number |
+|---|---|
+| Bar over the midfoot | The chapter gives no pass distance, and the orange mark is a shoulder guess, not the bar. |
+| Low-bar placement | The bar should sit under the spine of the shoulder blade. A side camera usually cannot see that ridge. |
+| Knees shoved out | Both knees moving out is a front view. |
+| Stance width | The gap between the heels is a front view. |
+| Toe angle | Toes about 30 degrees out is a front view. |
+| Grip and wrists | The hands are hidden in a side view of the set. |
+| Rack height and walk-out | The rack and the walk-out are outside the squat being graded. |
+
+These seven stay `cannot assess` with no measurement. The detail for every rule is below.
 
 | Rule | Pages | Side view | What the page prints |
 |---|---|---|---|
 | Depth | 2, 15, 17 | Assessable | `meets`, `does not meet`, or `cannot assess`. This is the only graded rule. |
-| Back angle | 9, 22, 32, 35 | Partial | `cannot assess`. "No numeric pass band is stated in the chapter." |
-| Hip angle and knee angle | 9, 13 | Partial | `cannot assess`. "Report the degrees. The graded result is cannot assess." The degrees are not calculated. |
-| Bar over the midfoot | 8, 9, 11, 32 | Partial | `cannot assess`. "Cannot assess when the foot or the bar track is missing. The bar track is an estimate." |
-| Knees relative to the toes | 17, 22 | Partial | `cannot assess`. "A borderline position is cannot assess. Grade it only when the knee and the toes are visible." |
-| Hip drive | 23, 32, 35 | Partial | `cannot assess`. "Judged from hip and shoulder motion on the ascent." |
-| Eye gaze | 24, 26, 35 | Partial | `cannot assess`. "The side view can separate chin-down from chin-up. It cannot measure the distance to the gaze point." |
-| Feet flat | 22 | Partial | `cannot assess`. "Cannot assess when the heel is hidden." |
+| Back angle | 9, 22, 32, 35 | Partial | Shows the torso angle against the floor. Stays `cannot assess`. "No numeric pass band is stated in the chapter." |
+| Hip angle and knee angle | 9, 13 | Partial | Shows both angles. Stays `cannot assess`. "Report the degrees. The graded result is cannot assess." |
+| Bar over the midfoot | 8, 9, 11, 32 | Partial | `cannot assess`. No number. "Cannot assess when the foot or the bar track is missing. The bar track is an estimate." |
+| Knees relative to the toes | 17, 22 | Partial | Shows how far the knee is in front of or behind the toes, as a fraction of image width. Stays `cannot assess`. |
+| Hip drive | 23, 32, 35 | Partial | Shows how far the hip and the shoulder rise on the early ascent. Stays `cannot assess`. |
+| Eye gaze | 24, 26, 35 | Partial | Shows how many degrees the nose sits below or above the ear. Stays `cannot assess`. The 4 or 5 feet are not measured. |
+| Feet flat | 22 | Partial | Shows how far the heel point moves up or down from standing to the bottom. Stays `cannot assess`. |
 | Low-bar placement | 13, 29, 35 | Partial | `cannot assess`. "A side view usually cannot see the scapular spine. Use cannot assess unless the bar is clearly on the neck or clearly below the shoulder." |
 | Knees shoved out | 14, 22, 35 | Not assessable | `cannot assess`. "This is a front-view check. A side camera cannot see it." |
 | Stance width | 19, 32, 35 | Not assessable | `cannot assess`. "Shoulder-width heels need a front view." |
@@ -74,13 +100,13 @@ The pose model marks the hip joint and the knee joint. In the image, down is a l
 
 A side view can support a measurement for some of the partial rules. The chapter still does not give a pass band, so the page does not turn our own number into `meets`.
 
-- Back angle is about 45 degrees, and both a too-upright back and a collapsed back are faults. "About 45" is not a range that passes. Showing the degrees would still leave the middle as `cannot assess`.
-- Hip and knee angles are described, and the skill says to report them and not pass or fail them.
+- Back angle is about 45 degrees, and both a too-upright back and a collapsed back are faults. The page shows the torso angle against the floor. "About 45" is not a range that passes, so the result stays `cannot assess`.
+- Hip and knee angles are shown in degrees. The skill says to report them and not pass or fail them.
 - The bar should stay over the middle of the foot. The "12 inches" in the chapter is an example of bad leverage, not a cutoff. The orange mark is a shoulder guess, so the page never compares it with the foot.
-- The knees should finish only a little in front of the toes. "A little" has no inch limit.
-- Hip drive means the hips go straight up and the chest does not rise first. The chapter gives no angle for that motion.
-- Gaze should be at the floor about 4 or 5 feet ahead, with the chin slightly down. The video has no scale for that floor distance.
-- The heels should stay on the floor. The model marks a heel point. It does not see the sole touching the floor.
+- The knees should finish only a little in front of the toes. The page shows that distance as a fraction of the image width. "A little" has no inch limit, so the result stays `cannot assess`.
+- Hip drive means the hips go straight up and the chest does not rise first. The page shows how far the hip and the shoulder rise during the first part of the ascent, until the hip has come up by 0.04 of the image height. The chapter gives no angle, so the result stays `cannot assess`.
+- Gaze should be at the floor about 4 or 5 feet ahead, with the chin slightly down. The page shows the nose-to-ear tilt. The video has no scale for the floor distance, so the result stays `cannot assess`.
+- The heels should stay on the floor. The page compares the heel point at the bottom with the heel point while standing. That point is not the sole on the floor, and the chapter gives no lift height, so the result stays `cannot assess`.
 - The bar should sit just under the spine of the shoulder blade. A side camera usually cannot see that ridge.
 - Knees out, stance width, toe angle, grip, and the rack need a front view or happen outside the set. No assumption makes a side video show them.
 
@@ -226,7 +252,7 @@ The first upload of this file failed before any finding was produced. A frame wi
 
 **Cost.** No paid API and no GPU. The pose model is a one-time download. The 8-second common sample takes roughly 10 seconds on CPU. The 30-second front-view clip takes about a minute. Build cost and per-video cost are about zero.
 
-**Trade-offs.** A structured skill file is the grading source, not a search over the PDF. The chapter is 35 pages and every rule is listed for every rep, so a reviewer can see what was considered. A 2D side-view pose was chosen instead of a trained bar detector or a 3D pose model. The bar position is computed from the shoulder so it can be labeled as an estimate. Reps are counted from hip height so a pause at the bottom is one rep. Only depth is graded. The partial rules stay `cannot assess` rather than receiving a cutoff the chapter does not give.
+**Trade-offs.** A structured skill file is the grading source, not a search over the PDF. The chapter is 35 pages and every rule is listed for every rep, so a reviewer can see what was considered. A 2D side-view pose was chosen instead of a trained bar detector or a 3D pose model. The bar position is computed from the shoulder so it can be labeled as an estimate. Reps are counted from hip height so a pause at the bottom is one rep. Only depth is graded. Six partial rules show a number and stay `cannot assess`. They do not receive a cutoff the chapter does not give.
 
 **Known limits.** The common sample's bar path is not reliable. The shoulder landmark sticks on the plate. A front view can still produce rep bottoms, because hip height changes in the image, but those bottoms are not a side-view depth judgment. `cannot assess` is the result when the needed point is hidden or the gap is inside `depth_margin`. `0.08`, `0.5` visibility, the half-frame visibility fraction, the shoulder offsets `0.12` and `0.18`, and `0.03` are our cutoffs.
 
@@ -244,6 +270,6 @@ Mistakes that were caught before they became a grade:
 
 ## Still open
 
-- The eight partial rules are explained and cited. None of them is measured. A later measurement can show a number. It still cannot mark `meets` unless the chapter has a yes-or-no line, which only depth has.
+- Six partial rules now show a number: back angle, hip and knee angles, knees versus toes, hip drive, gaze, and heel height. They stay `cannot assess`. Bar path and low-bar placement are still unmeasured. The bar mark is a shoulder guess.
 - The bar trail is drawn and labeled as an estimate. It is not graded. Plate detection was tried and removed, because the orange dot did not sit on the bar.
 - The page does not decide for itself that a clip is a front view or a back view. That limit is written here, and the findings stay `cannot assess`.
